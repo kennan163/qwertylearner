@@ -86,7 +86,7 @@ export const isReviewModeAtom = atom((get) => get(reviewModeInfoAtom).isReviewMo
 
 export const phoneticConfigAtom = atomForConfig('phoneticConfig', {
   isOpen: true,
-  type: 'us' as PhoneticType,
+  type: 'both' as PhoneticType,
 })
 
 export const isOpenDarkModeAtom = atomWithStorage('isOpenDarkModeAtom', window.matchMedia('(prefers-color-scheme: dark)').matches)

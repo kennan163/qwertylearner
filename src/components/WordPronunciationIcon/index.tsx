@@ -1,7 +1,10 @@
 import { SoundIcon } from './SoundIcon'
+import { DualPronunciationIcon } from './DualPronunciationIcon'
 import usePronunciationSound from '@/hooks/usePronunciation'
+import { phoneticConfigAtom, pronunciationConfigAtom } from '@/store'
 import type { Word } from '@/typings'
-import { useCallback, useEffect, useImperativeHandle } from 'react'
+import { useAtomValue } from 'jotai'
+import { useCallback, useEffect, useImperativeHandle, useRef } from 'react'
 import React from 'react'
 
 export const WordPronunciationIcon = React.forwardRef<
@@ -21,6 +24,37 @@ export const WordPronunciationIcon = React.forwardRef<
       return word.name
     }
   }
+  
+  const pronunciationConfig = useAtomValue(pronunciationConfigAtom)
+  const phoneticConfig = useAtomValue(phoneticConfigAtom)
+  
+  // 如果发音类型是both，使用连续播放英式和美式发音的组件
+  if (pronunciationConfig.type === 'both' || phoneticConfig.type === 'both') {
+    const dualRef = useRef<DualPronunciationIconRef>(null)
+    
+    const dualPlaySound = useCallback(() => {
+      dualRef.current?.play()
+    }, [])
+    
+    useImperativeHandle(
+      ref,
+      () => ({
+        play: dualPlaySound,
+      }),
+      [dualPlaySound],
+    )
+    
+    return (
+      <DualPronunciationIcon 
+        word={word} 
+        className={className} 
+        iconClassName={iconClassName}
+        ref={dualRef}
+      />
+    )
+  }
+  
+  // 否则使用原来的播放逻辑
   const { play, stop, isPlaying } = usePronunciationSound(currentWord())
 
   const playSound = useCallback(() => {

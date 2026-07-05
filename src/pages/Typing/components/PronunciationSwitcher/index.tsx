@@ -33,12 +33,19 @@ const PronunciationSwitcher = () => {
   }, [currentDictInfo.defaultPronIndex, currentDictInfo.language, setPronunciationConfig, pronunciationList, pronunciationConfig.type])
 
   useEffect(() => {
-    const phoneticType = PRONUNCIATION_PHONETIC_MAP[pronunciationConfig.type]
-    if (phoneticType) {
+    if (pronunciationConfig.type === 'both') {
       setPhoneticConfig((old) => ({
         ...old,
-        type: phoneticType,
+        type: 'both' as PhoneticType,
       }))
+    } else {
+      const phoneticType = PRONUNCIATION_PHONETIC_MAP[pronunciationConfig.type]
+      if (phoneticType) {
+        setPhoneticConfig((old) => ({
+          ...old,
+          type: phoneticType,
+        }))
+      }
     }
   }, [pronunciationConfig.type, setPhoneticConfig])
 
@@ -83,17 +90,30 @@ const PronunciationSwitcher = () => {
   )
 
   const onChangePronunciationType = useCallback(
-    (value: PronunciationType) => {
-      const item = pronunciationList.find((item) => item.pron === value)
-      if (item) {
+    (value: PronunciationType | 'both') => {
+      if (value === 'both') {
         setPronunciationConfig((old) => ({
           ...old,
-          type: item.pron,
-          name: item.name,
+          type: 'both' as PronunciationType,
+          name: '美式+英式',
         }))
+        // 当选择both时，也将音标类型设为both
+        setPhoneticConfig((old) => ({
+          ...old,
+          type: 'both' as PhoneticType,
+        }))
+      } else {
+        const item = pronunciationList.find((item) => item.pron === value)
+        if (item) {
+          setPronunciationConfig((old) => ({
+            ...old,
+            type: item.pron,
+            name: item.name,
+          }))
+        }
       }
     },
-    [setPronunciationConfig, pronunciationList],
+    [setPronunciationConfig, setPhoneticConfig, pronunciationList],
   )
 
   const currentLabel = useMemo(() => {
@@ -213,6 +233,18 @@ const PronunciationSwitcher = () => {
                                   )}
                                 </Listbox.Option>
                               ))}
+                              <Listbox.Option key="both" value="both">
+                                {({ selected }) => (
+                                  <>
+                                    <span>美式+英式</span>
+                                    {selected ? (
+                                      <span className="listbox-options-icon">
+                                        <IconCheck className="focus:outline-none" />
+                                      </span>
+                                    ) : null}
+                                  </>
+                                )}
+                              </Listbox.Option>
                             </Listbox.Options>
                           </Transition>
                         </div>
